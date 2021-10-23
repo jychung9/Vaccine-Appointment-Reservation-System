@@ -21,7 +21,18 @@ public class Vaccine {
 
     // Increment the available doses
     public void increaseAvailableDoses(int num) {
+        if (num <= 0) {
+            throw new IllegalArgumentException("Argument cannot be negative!");
+        }
+        this.availableDoses += num;
+    }
 
+    // Decrement the available doses
+    public void decreaseAvailableDoses(int num) {
+        if (this.availableDoses - num < 0) {
+            throw new IllegalArgumentException("Not enough available doses!");
+        }
+        this.availableDoses -= num;
     }
 
     @Override
