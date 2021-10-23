@@ -3,11 +3,14 @@ package scheduler.model;
 public class Vaccine {
     private final String vaccineName;
 
+    private final int requiredDoses;
+
     private int availableDoses;
 
     private Vaccine(VaccineBuilder builder) {
         this.vaccineName = builder.vaccineName;
         this.availableDoses = builder.availableDoses;
+        this.requiredDoses = builder.requiredDoses;
     }
 
     // Getters
@@ -17,6 +20,10 @@ public class Vaccine {
 
     public int getAvailableDoses() {
         return availableDoses;
+    }
+
+    public int getRequiredDoses() {
+        return requiredDoses;
     }
 
     // Increment the available doses
@@ -38,22 +45,27 @@ public class Vaccine {
     @Override
     public String toString() {
         return "Vaccine{" +
-                "VaccineName='" + vaccineName + '\'' +
-                ", AvailableDoses=" + availableDoses +
+                "vaccineName='" + vaccineName + '\'' +
+                ", requiredDoses=" + requiredDoses +
+                ", availableDoses=" + availableDoses +
                 '}';
     }
 
     public static class VaccineBuilder {
         private final String vaccineName;
 
+        private final int requiredDoses;
+
         private int availableDoses;
 
-        public VaccineBuilder(String vaccineName) {
+        public VaccineBuilder(String vaccineName, int requiredDoses) {
             this.vaccineName = vaccineName;
+            this.requiredDoses = requiredDoses;
         }
 
         public VaccineBuilder availableDoses(int availableDoses) {
             this.availableDoses = availableDoses;
+
             return this;
         }
 
