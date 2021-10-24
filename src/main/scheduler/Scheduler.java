@@ -8,38 +8,40 @@ import java.io.BufferedReader;
 import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Scheduler {
-    public static void main(String[] args) throws IOException {
-//        // pre-define the three types of authorized vaccines
-//        // note: it's a poor practice to hard-code these values, but we will do this ]
-//        // for the simplicity of this assignment
-//
-//        // construct a map of vaccineName -> vaccineObject
-//        Map<String, Vaccine> vaccineMap = new HashMap<>();
-//        // construct the Pfizer vaccine and add to map
-//        vaccineMap.put("Pfizer", new Vaccine.VaccineBuilder("Pfizer", 2)
-//                .availableDoses(33).
-//                        build());
-//        // construct the Moderna vaccine abd add to map
-//        vaccineMap.put("Moderna", new Vaccine.VaccineBuilder("Moderna", 2)
-//                .availableDoses(44)
-//                .build());
-//        // construct the Moderna vaccine abd add to map
-//        vaccineMap.put("Johnson & Johnson", new Vaccine.VaccineBuilder("Johnson & Johnson", 1)
-//                .availableDoses(7)
-//                .build());
-//
-//        // the start of the command-line interface
-//        System.out.println();
-//        System.out.println("Welcome to the COVID-19 Vaccine Reservation Scheduling Application!");
-//
-//        // process create account and login
-//        processCreateAndLogin();
-        ConnectionManager cm = new ConnectionManager();
+    public static void main(String[] args) {
+        // pre-define the three types of authorized vaccines
+        // note: it's a poor practice to hard-code these values, but we will do this ]
+        // for the simplicity of this assignment
 
+        // construct a map of vaccineName -> vaccineObject
+        Map<String, Vaccine> vaccineMap = new HashMap<>();
+        // construct the Pfizer vaccine and add to map
+        vaccineMap.put("Pfizer", new Vaccine.VaccineBuilder("Pfizer", 2)
+                .availableDoses(33).
+                        build());
+        // construct the Moderna vaccine abd add to map
+        vaccineMap.put("Moderna", new Vaccine.VaccineBuilder("Moderna", 2)
+                .availableDoses(44)
+                .build());
+        // construct the Moderna vaccine abd add to map
+        vaccineMap.put("Johnson & Johnson", new Vaccine.VaccineBuilder("Johnson & Johnson", 1)
+                .availableDoses(7)
+                .build());
+
+        // the start of the command-line interface
+        System.out.println();
+        System.out.println("Welcome to the COVID-19 Vaccine Reservation Scheduling Application!");
+
+        // process create account and login
+        processCreateAndLogin();
     }
 
     private static void processCreateAndLogin() {
