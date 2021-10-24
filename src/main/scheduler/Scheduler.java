@@ -34,29 +34,52 @@ public class Scheduler {
         // the start of the command-line interface
         System.out.println();
         System.out.println("Welcome to the COVID-19 Vaccine Reservation Scheduling Application!");
-        System.out.println();
 
         // process create account and login
         processCreateAndLogin();
 
     }
 
-    private static void processCreateAndLogin() throws IOException {
-        System.out.println(" *** Please enter one of the following commands *** ");
-        System.out.println("> Create");
-        System.out.println("> Login");
-        System.out.println("> Quit");
-        // read user input
-        BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("> ");
-        String response = r.readLine();
+    private static void processCreateAndLogin() {
+        while (true) {
+            System.out.println();
+            System.out.println(" *** Please enter one of the following commands *** ");
+            System.out.println("> Create");
+            System.out.println("> Login");
+            System.out.println("> Quit");
+            // read user input
+            BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("> ");
+            String response = "";
+            try {
+                response = r.readLine();
+            } catch (IOException e) {
+                System.out.println("Please try again!");
+            }
+            if (response.equalsIgnoreCase("Create")) {
+                createAccount();
+            } else if (response.equalsIgnoreCase("Login")) {
+                login();
+            } else if (response.equalsIgnoreCase("Quit")) {
+                System.out.println("Goodbye!");
+                break;
+            } else {
+                System.out.println("Invalid input!");
+            }
+        }
     }
 
     private static void createAccount() {
-        // TODO: replace this with the logic for creating an account
+        // TODO: add logic for creating an account
+
+        // once we've created the user, we can go back to processing create and login again
+        processCreateAndLogin();
     }
 
     private static void login() {
-        // TODO: replace this with the logic for logging in
+        // TODO: add logic for logging in
+        // case 0: invalid login credentials, re-try
+        // case 1: user is a patient, display the corresponding commands and wait for input
+        // case 2: user is a caregiver, display the corresponding commands and wait for input
     }
 }
