@@ -1,5 +1,11 @@
 package scheduler.model;
 
+import scheduler.db.ConnectionManager;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 public class Vaccine {
     private final String vaccineName;
 
@@ -27,19 +33,39 @@ public class Vaccine {
     }
 
     // Increment the available doses
-    public void increaseAvailableDoses(int num) {
+    public void increaseAvailableDoses(int num) throws SQLException {
         if (num <= 0) {
             throw new IllegalArgumentException("Argument cannot be negative!");
         }
         this.availableDoses += num;
+        ConnectionManager cm = new ConnectionManager();
+        Connection con = cm.createConnection();
+
+        String removeAvailability  = "UPDATE vaccines SET Availability = ? WHERE name = ?;";
+        PreparedStatement statement = con.prepareStatement(removeAvailability);
+        statement.setInt(1, this.availableDoses);
+        statement.setString(2, this.vaccineName);
+        statement.executeUpdate();
+
+        cm.closeConnection();
     }
 
     // Decrement the available doses
-    public void decreaseAvailableDoses(int num) {
+    public void decreaseAvailableDoses(int num) throws SQLException {
         if (this.availableDoses - num < 0) {
             throw new IllegalArgumentException("Not enough available doses!");
         }
         this.availableDoses -= num;
+        ConnectionManager cm = new ConnectionManager();
+        Connection con = cm.createConnection();
+
+        String removeAvailability  = "UPDATE vaccines SET Availability = ? WHERE name = ?;";
+        PreparedStatement statement = con.prepareStatement(removeAvailability);
+        statement.setInt(1, this.availableDoses);
+        statement.setString(2, this.vaccineName);
+        statement.executeUpdate();
+
+        cm.closeConnection();
     }
 
     @Override
