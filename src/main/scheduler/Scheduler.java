@@ -98,9 +98,9 @@ public class Scheduler {
                     // TODO: handle the case for patients
                 } else {
                     try {
-                        // calling Caregiver.CaregiverBuilder(user, email, salt, hash).build() will insert the
-                        // information in the caregiver table, no need to store this information in memory now
-                        new Caregiver.CaregiverBuilder(user, email, salt, hash).build();
+                        Caregiver caregiver = new Caregiver.CaregiverBuilder(user, email, salt, hash).build();
+                        // save to caregiver information to our database
+                        caregiver.saveToDB();
                     } catch (SQLException e) {
                         System.out.println("Create failed");
                         e.printStackTrace();

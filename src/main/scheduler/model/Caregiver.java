@@ -37,6 +37,21 @@ public class Caregiver {
         return hash;
     }
 
+    public void saveToDB() throws SQLException {
+        ConnectionManager cm = new ConnectionManager();
+        Connection con = cm.createConnection();
+
+        String addCaregiver = "INSERT INTO caregivers VALUES (? , ?, ?, ?)";
+        PreparedStatement statement = con.prepareStatement(addCaregiver);
+        statement.setString(1, this.username);
+        statement.setString(2, this.username);
+        statement.setBytes(3, this.salt);
+        statement.setBytes(4, this.hash);
+        statement.executeUpdate();
+
+        cm.closeConnection();
+    }
+
     public static class CaregiverBuilder {
         private final String username;
         private final String email;
@@ -50,19 +65,7 @@ public class Caregiver {
             this.hash = hash;
         }
 
-        public Caregiver build() throws SQLException {
-            ConnectionManager cm = new ConnectionManager();
-            Connection con = cm.createConnection();
-
-            String addCaregiver = "INSERT INTO caregivers VALUES (? , ?, ?, ?)";
-            PreparedStatement statement = con.prepareStatement(addCaregiver);
-            statement.setString(1, this.username);
-            statement.setString(2, this.username);
-            statement.setBytes(3, this.salt);
-            statement.setBytes(4, this.hash);
-            statement.executeUpdate();
-
-            cm.closeConnection();
+        public Caregiver build() {
             return new Caregiver(this);
         }
     }
