@@ -16,6 +16,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Scheduler {
+
+    private static final int HASH_STRENGTH = 10;
+    private static final int KEY_LENGTH = 16;
+
     public static void main(String[] args) {
         // pre-define the three types of authorized vaccines
         // note: it's a poor practice to hard-code these values, but we will do this ]
