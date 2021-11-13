@@ -2,52 +2,49 @@ package scheduler;
 
 import scheduler.db.ConnectionManager;
 import scheduler.model.Caregiver;
+import scheduler.model.Patient;
 import scheduler.model.Vaccine;
+import scheduler.util.Util;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.naming.OperationNotSupportedException;
 import java.io.BufferedReader;
-import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Date;
 
 public class Scheduler {
 
-    private static final int HASH_STRENGTH = 10;
-    private static final int KEY_LENGTH = 16;
+    // objects to keep track of the currently logged-in user
+    // Note: it is always true that at most one of currentCaregiver and currentPatient is not null
+    //       since only one user can be logged-in at a time
+    private static Caregiver currentCaregiver = null;
+    private static Patient currentPatient = null;
 
     public static void main(String[] args) {
-        // pre-define the three types of authorized vaccines
-        // note: it's a poor practice to hard-code these values, but we will do this ]
-        // for the simplicity of this assignment
-        // the start of the command-line interface
+        // printing greetings text
         System.out.println();
         System.out.println("Welcome to the COVID-19 Vaccine Reservation Scheduling Application!");
+        System.out.println("*** Please enter one of the following commands ***");
+        System.out.println("> create_patient <username> <password>");  //TODO: implement create_patient
+        System.out.println("> create_caregiver <username> <password>");
+        System.out.println("> login_patient <username> <password>");  // TODO: implement login_patient
+        System.out.println("> login_caregiver <username> <password>");
+        System.out.println("> search_caregiver_schedule <date>");  // TODO: implement search_caregiver_schedule
+        System.out.println("> reserve <date> <vaccine>");  // TODO: implement reserve
+        System.out.println("> upload_availability <date>");
+        System.out.println("> cancel <appointment_id>");  // TODO: implement cancel for extra credit
+        System.out.println("> add_doses <vaccine> <number>");
+        System.out.println("> show_appointments");  // TODO: implement show_appointments
+        System.out.println("> logout");  // TODO: implement logout
+        System.out.println("> quit");
+        System.out.println();
 
-        // process create account and login
-        processCreateAndLogin();
-    }
-
-    private static void processCreateAndLogin() {
+        // read input from user
+        BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
-            System.out.println();
-            System.out.println(" *** Please enter one of the following commands *** ");
-            System.out.println("> Create");
-            System.out.println("> Login");
-            System.out.println("> Quit");
-            // read user input
-            BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
             System.out.print("> ");
             String response = "";
             try {
@@ -55,95 +52,78 @@ public class Scheduler {
             } catch (IOException e) {
                 System.out.println("Please try again!");
             }
-            if (response.equalsIgnoreCase("Create")) {
-                createAccount();
-            } else if (response.equalsIgnoreCase("Login")) {
-                login();
-            } else if (response.equalsIgnoreCase("Quit")) {
-                System.out.println("Goodbye!");
+            // split the user input by spaces
+            String[] tokens = response.split(" ");
+            // check if input exists
+            if (tokens.length == 0) {
+                System.out.println("Please try again!");
+                continue;
+            }
+            // determine which operation to perform
+            String operation = tokens[0];
+            if (operation.equals("create_patient")) {
+                createPatient(tokens);
+            } else if (operation.equals("create_caregiver")) {
+                createCaregiver(tokens);
+            } else if (operation.equals("login_patient")) {
+                loginPatient(tokens);
+            } else if (operation.equals("login_caregiver")) {
+                loginCaregiver(tokens);
+            } else if (operation.equals("search_caregiver_schedule")) {
+                searchCaregiverSchedule(tokens);
+            } else if (operation.equals("reserve")) {
+                reserve(tokens);
+            } else if (operation.equals("upload_availability")) {
+                uploadAvailability(tokens);
+            } else if (operation.equals("cancel")) {
+                cancel(tokens);
+            } else if (operation.equals("add_doses")) {
+                addDoses(tokens);
+            } else if (operation.equals("show_appointments")) {
+                showAppointments(tokens);
+            } else if (operation.equals("logout")) {
+                logout(tokens);
+            } else if (operation.equals("quit")) {
+                System.out.println("Bye!");
                 return;
             } else {
-                System.out.println("Invalid input!");
+                System.out.println("Invalid operation name!");
             }
         }
     }
 
-    private static void createAccount() {
-        System.out.println();
-        System.out.println(" *** Please enter one of the following account types *** ");
-        System.out.println("> Patient");
-        System.out.println("> Caregiver");
-        // read user input
-        BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("> ");
-        String response = "";
-
-        while (true) {
-            try {
-                response = r.readLine();
-            } catch (IOException e) {
-                System.out.println("Please try again!");
-            }
-            if (response.equalsIgnoreCase("Patient")
-                    || response.equalsIgnoreCase("Caregiver")) {
-
-                String user = readUsername();
-                String email = readEmail();
-                String pass = readPassword();
-
-                byte[] salt = generateSalt();
-                byte[] hash = generateHash(pass, salt);
-
-                if (response.equalsIgnoreCase("Patient")) {
-                    // TODO: handle the case for patients
-                } else {
-                    try {
-                        Caregiver caregiver = new Caregiver.CaregiverBuilder(user, email, salt, hash).build();
-                        // save to caregiver information to our database
-                        caregiver.saveToDB();
-                    } catch (SQLException e) {
-                        System.out.println("Create failed");
-                        e.printStackTrace();
-                    }
-                }
-                System.out.println();
-                System.out.println(" *** Account created successfully *** ");
-                break;
-            } else {
-                System.out.println("Invalid input!");
-            }
-        }
-
-        // once we've created the user, we can go back to processing create and login again
-        processCreateAndLogin();
+    private static void createPatient(String[] tokens) {
     }
 
-    private static String readUsername() {
-        System.out.println();
-        System.out.println(" *** Please enter a unique username *** ");
-        // read user input
-        BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("> ");
-        String response = "";
-        while (true) {
-            try {
-                response = r.readLine();
-            } catch (IOException e) {
-                System.out.println("Please try again!");
-            }
-            // check if the username has been taken
-            if (usernameExistsInCaregiver(response)) {
-                System.out.println();
-                System.out.println(" *** Username taken, try again *** ");
-                System.out.print("> ");
-            } else {
-                break;
-            }
+    private static void createCaregiver(String[] tokens) {
+        // create_caregiver <username> <password>
+        // check 1: the length for tokens need to be exactly 3 to include all information (with the operation name)
+        if (tokens.length != 3) {
+            System.out.println("Please try again!");
+            return;
         }
-        return response;
+        String username = tokens[1];
+        String password = tokens[2];
+        // check 2: check if the username has been taken already
+        if (usernameExistsCaregiver(username)) {
+            System.out.println("Username taken, try again!");
+            return;
+        }
+        byte[] salt = Util.generateSalt();
+        byte[] hash = Util.generateHash(password, salt);
+        // create the caregiver
+        try {
+            currentCaregiver = new Caregiver.CaregiverBuilder(username, salt, hash).build();
+            // save to caregiver information to our database
+            currentCaregiver.saveToDB();
+            System.out.println(" *** Account created successfully *** ");
+        } catch (SQLException e) {
+            System.out.println("Create failed");
+            e.printStackTrace();
+        }
     }
 
-    private static boolean usernameExistsInCaregiver(String username){
+    private static boolean usernameExistsCaregiver(String username) {
         ConnectionManager cm = new ConnectionManager();
         Connection con = cm.createConnection();
 
@@ -155,7 +135,7 @@ public class Scheduler {
             // returns false if the cursor is not before the first record or if there are no rows in the ResultSet.
             return resultSet.isBeforeFirst();
         } catch (SQLException e) {
-            System.out.println("Error occured when checking username");
+            System.out.println("Error occurred when checking username");
             e.printStackTrace();
         } finally {
             cm.closeConnection();
@@ -163,105 +143,120 @@ public class Scheduler {
         return true;
     }
 
-    private static String readEmail() {
-        System.out.println();
-        System.out.println(" *** Please enter a unique email *** ");
-        // read user input
-        BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("> ");
-        String response = "";
-        while (true) {
-            try {
-                response = r.readLine();
-            } catch (IOException e) {
-                System.out.println("Please try again!");
-            }
-            // check if the email has been taken
-            if (emailExistsInCaregiver(response)) {
-                System.out.println();
-                System.out.println(" *** Email taken, try again *** ");
-                System.out.print("> ");
-            } else {
-                break;
-            }
-        }
-        return response;
+    private static void loginPatient(String[] tokens) {
     }
 
-    private static boolean emailExistsInCaregiver(String email) {
-        ConnectionManager cm = new ConnectionManager();
-        Connection con = cm.createConnection();
+    private static void loginCaregiver(String[] tokens) {
+        // login_caregiver <username> <password>
+        // check 1: if someone's already logged-in, they need to log out first
+        if (currentCaregiver != null || currentPatient != null) {
+            System.out.println("Already logged-in!");
+            return;
+        }
+        // check 2: the length for tokens need to be exactly 3 to include all information (with the operation name)
+        if (tokens.length != 3) {
+            System.out.println("Please try again!");
+            return;
+        }
+        String username = tokens[1];
+        String password = tokens[2];
 
-        String selectUsername = "SELECT * FROM Caregivers WHERE Email = ?";
+        Caregiver caregiver = null;
         try {
-            PreparedStatement statement = con.prepareStatement(selectUsername);
-            statement.setString(1, email);
-            ResultSet resultSet = statement.executeQuery();
-            // returns false if the cursor is not before the first record or if there are no rows in the ResultSet.
-            return resultSet.isBeforeFirst();
+            caregiver = new Caregiver.CaregiverGetter(username, password).get();
         } catch (SQLException e) {
-            System.out.println("Error occured when checking email");
+            System.out.println("Error occurred when logging in");
             e.printStackTrace();
-        } finally {
-            cm.closeConnection();
         }
-        return true;
-    }
-
-    private static String readPassword() {
-        System.out.println();
-        System.out.println(" *** Please enter a password longer than five characters that"
-                + " contains at least one special character (!, @, #, $, or &) *** ");
-        // read user input
-        BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("> ");
-        String response = "";
-        while (true) {
-            try {
-                response = r.readLine();
-            } catch (IOException e) {
-                System.out.println("Please try again!");
-            }
-            if (response.length() < 5 || !(response.contains("!") || response.contains("@")
-                    || response.contains("#") || response.contains("$")
-                    || response.contains("&"))) {
-                System.out.println();
-                System.out.println(" *** Not a strong enough password, try again *** ");
-            } else {
-                break;
-            }
+        // check if the login was successful
+        if (caregiver == null) {
+            System.out.println("Please try again!");
+        } else {
+            System.out.println("Caregiver logged in as: " + username);
+            currentCaregiver = caregiver;
         }
-        return response;
     }
 
-    private static void login() {
-        // TODO: add logic for logging in
-        // case 0: invalid login credentials, re-try
-        // case 1: user is a patient, display the corresponding commands and wait for input
-        // case 2: user is a caregiver, display the corresponding commands and wait for input
+    private static void searchCaregiverSchedule(String[] tokens) {
     }
 
-    private static byte[] generateSalt() {
-        // Generate a random cryptographic salt
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
-        return salt;
+    private static void reserve(String[] tokens) {
     }
 
-    private static byte[] generateHash(String password, byte[] salt) {
-        // Specify the hash parameters
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, HASH_STRENGTH, KEY_LENGTH);
-
-        // Generate the hash
-        SecretKeyFactory factory = null;
-        byte[] hash = null;
+    private static void uploadAvailability(String[] tokens) {
+        // upload_availability <date>
+        // check 1: check if the current logged-in user is a caregiver
+        if (currentCaregiver == null) {
+            System.out.println("Please login as a caregiver first!");
+            return;
+        }
+        // check 2: the length for tokens need to be exactly 2 to include all information (with the operation name)
+        if (tokens.length != 2) {
+            System.out.println("Please try again!");
+            return;
+        }
+        String date = tokens[1];
         try {
-            factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            hash = factory.generateSecret(spec).getEncoded();
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
-            throw new IllegalStateException();
+            Date d = Date.valueOf(date);
+            currentCaregiver.uploadAvailability(d);
+            System.out.println("Availability uploaded!");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Please enter a valid date!");
+        } catch (SQLException e) {
+            System.out.println("Error occurred when uploading availability");
+            e.printStackTrace();
         }
-        return hash;
+    }
+
+    private static void cancel(String[] tokens) {
+    }
+
+    private static void addDoses(String[] tokens) {
+        // add_doses <vaccine> <number>
+        // check 1: check if the current logged-in user is a caregiver
+        if (currentCaregiver == null) {
+            System.out.println("Please login as a caregiver first!");
+            return;
+        }
+        // check 2: the length for tokens need to be exactly 3 to include all information (with the operation name)
+        if (tokens.length != 3) {
+            System.out.println("Please try again!");
+            return;
+        }
+        String vaccineName = tokens[1];
+        int doses = Integer.parseInt(tokens[2]);
+        Vaccine vaccine = null;
+        try {
+            vaccine = new Vaccine.VaccineGetter(vaccineName).get();
+        } catch (SQLException e) {
+            System.out.println("Error occurred when adding doses");
+            e.printStackTrace();
+        }
+        // check 3: if getter returns null, it means that we need to create the vaccine and insert it into the Vaccines
+        //          table
+        if (vaccine == null) {
+            try {
+                vaccine = new Vaccine.VaccineBuilder(vaccineName, doses).build();
+                vaccine.saveToDB();
+            } catch (SQLException e) {
+                System.out.println("Error occurred when adding doses");
+                e.printStackTrace();
+            }
+        } else {
+            // if the vaccine is not null, meaning that the vaccine already exists in our table
+            try {
+                vaccine.increaseAvailableDoses(doses);
+            } catch (SQLException e) {
+                System.out.println("Error occurred when adding doses");
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Doses updated!");
+    }
+
+    private static void showAppointments(String[] tokens) {
+    }
+
+    private static void logout(String[] tokens) {
     }
 }
