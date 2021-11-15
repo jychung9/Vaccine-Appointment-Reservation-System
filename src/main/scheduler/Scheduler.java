@@ -28,17 +28,17 @@ public class Scheduler {
         System.out.println();
         System.out.println("Welcome to the COVID-19 Vaccine Reservation Scheduling Application!");
         System.out.println("*** Please enter one of the following commands ***");
-        System.out.println("> create_patient <username> <password>");  //TODO: implement create_patient
+        System.out.println("> create_patient <username> <password>");  //TODO: implement create_patient (Part 1)
         System.out.println("> create_caregiver <username> <password>");
-        System.out.println("> login_patient <username> <password>");  // TODO: implement login_patient
+        System.out.println("> login_patient <username> <password>");  // TODO: implement login_patient (Part 1)
         System.out.println("> login_caregiver <username> <password>");
-        System.out.println("> search_caregiver_schedule <date>");  // TODO: implement search_caregiver_schedule
-        System.out.println("> reserve <date> <vaccine>");  // TODO: implement reserve
+        System.out.println("> search_caregiver_schedule <date>");  // TODO: implement search_caregiver_schedule (Part 2)
+        System.out.println("> reserve <date> <vaccine>");  // TODO: implement reserve (Part 2)
         System.out.println("> upload_availability <date>");
-        System.out.println("> cancel <appointment_id>");  // TODO: implement cancel for extra credit
+        System.out.println("> cancel <appointment_id>");  // TODO: implement cancel (extra credit)
         System.out.println("> add_doses <vaccine> <number>");
-        System.out.println("> show_appointments");  // TODO: implement show_appointments
-        System.out.println("> logout");  // TODO: implement logout
+        System.out.println("> show_appointments");  // TODO: implement show_appointments (Part 2)
+        System.out.println("> logout");  // TODO: implement logout (Part 2)
         System.out.println("> quit");
         System.out.println();
 
@@ -93,6 +93,7 @@ public class Scheduler {
     }
 
     private static void createPatient(String[] tokens) {
+        // TODO: Part 1
     }
 
     private static void createCaregiver(String[] tokens) {
@@ -144,6 +145,7 @@ public class Scheduler {
     }
 
     private static void loginPatient(String[] tokens) {
+        // TODO: Part 1
     }
 
     private static void loginCaregiver(String[] tokens) {
@@ -178,9 +180,11 @@ public class Scheduler {
     }
 
     private static void searchCaregiverSchedule(String[] tokens) {
+        // TODO: Part 2
     }
 
     private static void reserve(String[] tokens) {
+        // TODO: Part 2
     }
 
     private static void uploadAvailability(String[] tokens) {
@@ -209,6 +213,7 @@ public class Scheduler {
     }
 
     private static void cancel(String[] tokens) {
+        // TODO: Extra credit
     }
 
     private static void addDoses(String[] tokens) {
@@ -255,8 +260,10 @@ public class Scheduler {
     }
 
     private static void showAppointments(String[] tokens) {
+        // TODO: Part 2
     }
 
     private static void logout(String[] tokens) {
+        // TODO: Part 2
     }
 }
