@@ -34,8 +34,8 @@ public class Vaccine {
         ConnectionManager cm = new ConnectionManager();
         Connection con = cm.createConnection();
 
-        String addUser = "INSERT INTO vaccines VALUES (?, ?)";
-        PreparedStatement statement = con.prepareStatement(addUser);
+        String addDoses = "INSERT INTO vaccines VALUES (?, ?)";
+        PreparedStatement statement = con.prepareStatement(addDoses);
         statement.setString(1, this.vaccineName);
         statement.setInt(2, this.availableDoses);
         statement.executeUpdate();
