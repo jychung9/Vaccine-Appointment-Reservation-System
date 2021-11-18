@@ -35,12 +35,16 @@ public class Vaccine {
         Connection con = cm.createConnection();
 
         String addDoses = "INSERT INTO vaccines VALUES (?, ?)";
-        PreparedStatement statement = con.prepareStatement(addDoses);
-        statement.setString(1, this.vaccineName);
-        statement.setInt(2, this.availableDoses);
-        statement.executeUpdate();
-
-        cm.closeConnection();
+        try {
+            PreparedStatement statement = con.prepareStatement(addDoses);
+            statement.setString(1, this.vaccineName);
+            statement.setInt(2, this.availableDoses);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLException();
+        } finally {
+            cm.closeConnection();
+        }
     }
 
     // Increment the available doses
@@ -49,16 +53,21 @@ public class Vaccine {
             throw new IllegalArgumentException("Argument cannot be negative!");
         }
         this.availableDoses += num;
+
         ConnectionManager cm = new ConnectionManager();
         Connection con = cm.createConnection();
 
         String removeAvailability  = "UPDATE vaccines SET Doses = ? WHERE name = ?;";
-        PreparedStatement statement = con.prepareStatement(removeAvailability);
-        statement.setInt(1, this.availableDoses);
-        statement.setString(2, this.vaccineName);
-        statement.executeUpdate();
-
-        cm.closeConnection();
+        try {
+            PreparedStatement statement = con.prepareStatement(removeAvailability);
+            statement.setInt(1, this.availableDoses);
+            statement.setString(2, this.vaccineName);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLException();
+        } finally {
+            cm.closeConnection();
+        }
     }
 
     // Decrement the available doses
@@ -71,12 +80,16 @@ public class Vaccine {
         Connection con = cm.createConnection();
 
         String removeAvailability  = "UPDATE vaccines SET Doses = ? WHERE name = ?;";
-        PreparedStatement statement = con.prepareStatement(removeAvailability);
-        statement.setInt(1, this.availableDoses);
-        statement.setString(2, this.vaccineName);
-        statement.executeUpdate();
-
-        cm.closeConnection();
+        try {
+            PreparedStatement statement = con.prepareStatement(removeAvailability);
+            statement.setInt(1, this.availableDoses);
+            statement.setString(2, this.vaccineName);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLException();
+        } finally {
+            cm.closeConnection();
+        }
     }
 
     @Override
@@ -114,15 +127,20 @@ public class Vaccine {
             Connection con = cm.createConnection();
 
             String getVaccine = "SELECT Name, Doses FROM Vaccines WHERE Name = ?";
-            PreparedStatement statement = con.prepareStatement(getVaccine);
-            statement.setString(1, this.vaccineName);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                this.availableDoses = resultSet.getInt("Doses");
-                return new Vaccine(this);
+            try {
+                PreparedStatement statement = con.prepareStatement(getVaccine);
+                statement.setString(1, this.vaccineName);
+                ResultSet resultSet = statement.executeQuery();
+                while (resultSet.next()) {
+                    this.availableDoses = resultSet.getInt("Doses");
+                    return new Vaccine(this);
+                }
+                return null;
+            } catch (SQLException e) {
+                throw new SQLException();
+            } finally {
+                cm.closeConnection();
             }
-            cm.closeConnection();
-            return null;
         }
     }
 }
